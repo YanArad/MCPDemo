@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Device Store</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --border: #dbe3f0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 { margin: 0 0 8px; }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .catalog {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .device {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .device label {
+      display: flex;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .device input[type="checkbox"] {
+      margin-top: 4px;
+      accent-color: var(--accent);
+    }
+
+    .device h3 {
+      margin: 0 0 4px;
+      font-size: 1.05rem;
+    }
+
+    .device p {
+      margin: 2px 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .price {
+      margin-top: 8px;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .selection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .count {
+      background: #e8efff;
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    li { margin: 8px 0; }
+
+    .empty {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .actions { margin-top: 16px; }
+
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    button:hover { background: #1d4ed8; }
+
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Mobile Device Store</h1>
+    <p class="subtitle">Browse the catalog and select the mobile devices you are interested in.</p>
+
+    <div class="layout">
+      <section class="panel" aria-labelledby="catalog-heading">
+        <h2 id="catalog-heading">Device Catalog</h2>
+        <div id="catalog" class="catalog" aria-live="polite"></div>
+      </section>
+
+      <aside class="panel" aria-labelledby="selected-heading">
+        <div class="selection-header">
+          <h2 id="selected-heading">Selected Devices</h2>
+          <span id="selected-count" class="count">0 selected</span>
+        </div>
+        <p id="empty-message" class="empty">No devices selected.</p>
+        <ul id="selected-list"></ul>
+        <div class="actions">
+          <button type="button" id="clear-selection">Clear selection</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const devices = [
+      { id: "iphone-15", name: "iPhone 15", brand: "Apple", storage: "128 GB", price: 799 },
+      { id: "galaxy-s24", name: "Galaxy S24", brand: "Samsung", storage: "256 GB", price: 859 },
+      { id: "pixel-8", name: "Pixel 8", brand: "Google", storage: "128 GB", price: 699 },
+      { id: "oneplus-12", name: "OnePlus 12", brand: "OnePlus", storage: "256 GB", price: 799 },
+      { id: "xiaomi-14", name: "Xiaomi 14", brand: "Xiaomi", storage: "256 GB", price: 749 },
+      { id: "moto-edge-50", name: "Moto Edge 50", brand: "Motorola", storage: "256 GB", price: 599 }
+    ];
+
+    const catalog = document.getElementById("catalog");
+    const selectedList = document.getElementById("selected-list");
+    const selectedCount = document.getElementById("selected-count");
+    const emptyMessage = document.getElementById("empty-message");
+    const clearButton = document.getElementById("clear-selection");
+
+    function renderCatalog() {
+      catalog.innerHTML = devices.map((device) => `
+        <article class="device">
+          <label for="${device.id}">
+            <input type="checkbox" id="${device.id}" name="device" value="${device.id}">
+            <div>
+              <h3>${device.name}</h3>
+              <p><strong>Brand:</strong> ${device.brand}</p>
+              <p><strong>Storage:</strong> ${device.storage}</p>
+              <p class="price">$${device.price}</p>
+            </div>
+          </label>
+        </article>
+      `).join("");
+    }
+
+    function getSelectedDevices() {
+      const checkedIds = new Set(
+        Array.from(document.querySelectorAll('input[name="device"]:checked')).map((input) => input.value)
+      );
+      return devices.filter((device) => checkedIds.has(device.id));
+    }
+
+    function updateSelection() {
+      const selected = getSelectedDevices();
+      selectedCount.textContent = selected.length + " selected";
+      selectedList.innerHTML = selected.map((device) => `<li>${device.name} (${device.brand}) - $${device.price}</li>`).join("");
+      emptyMessage.hidden = selected.length > 0;
+    }
+
+    catalog.addEventListener("change", (event) => {
+      if (event.target && event.target.name === "device") {
+        updateSelection();
+      }
+    });
+
+    clearButton.addEventListener("click", () => {
+      document.querySelectorAll('input[name="device"]:checked').forEach((input) => {
+        input.checked = false;
+      });
+      updateSelection();
+    });
+
+    renderCatalog();
+    updateSelection();
+  </script>
+</body>
+</html>
