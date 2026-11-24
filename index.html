@@ -42,6 +42,7 @@
   .opts input:focus-visible + span { outline:3px solid #f59e0b; outline-offset:2px; }
   .status { min-height:1.4rem; color:var(--ok); font-weight:600; margin:.5rem 0 0; }
   .empty { padding:2rem; text-align:center; color:var(--muted); }
+  .basket-count { display:inline-grid; place-items:center; min-width:1.5rem; height:1.5rem; margin-left:.25rem; border-radius:99px; background:#fff; color:var(--accent-d); }
   @media (max-width:800px) { main { grid-template-columns:1fr; } aside { position:static; order:-1; } }
 </style>
 </head>
@@ -103,6 +104,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var state = { query:'', brand:'', category:'', sort:'', selectedId:null, storage:null };
+  var cart = [];
 
   function fmt(n) { return '$' + n.toLocaleString('en-US'); }
   function size(gb) { return gb >= 1024 ? (gb / 1024) + ' TB' : gb + ' GB'; }
@@ -163,7 +165,7 @@
       b.textContent = isSel ? '✓ Selected' : 'Select';
       b.setAttribute('aria-pressed', String(isSel));
       b.setAttribute('aria-label', (isSel ? 'Selected: ' : 'Select ') + d.name);
-      b.addEventListener('click', function () { select(d.id); });
+      b.addEventListener('click', function () { selectDevice(d.id); });
       [img, h, m, p, b].forEach(function (n) { li.appendChild(n); });
       grid.appendChild(li);
     });
@@ -191,17 +193,23 @@
     $('sel-price').textContent = fmt(priceFor(d, state.storage));
   }
 
-  function select(id) {
-    var d = find(id);
-    state.selectedId = id; state.storage = d.opts[0][0];
+  function selectDevice(id) {
+    state.selectedId = state.selectedId === id ? null : id;
+    var device = state.selectedId && find(state.selectedId);
+    state.storage = device ? device.opts[0][0] : null;
     $('status').textContent = '';
-    renderGrid(); renderSelection();
+    renderGrid();
+    renderSelection();
   }
 
   $('add').addEventListener('click', function () {
     var d = find(state.selectedId);
     if (!d) { return; }
-    $('status').textContent = '✓ Added to cart: ' + d.name + ', ' + size(state.storage) + ' – ' + fmt(priceFor(d, state.storage));
+    var price = priceFor(d, state.storage);
+    cart.push({ deviceId:d.id, storage:state.storage, price:price });
+    $('cartCount').textContent = String(cart.length);
+    $('cartButton').setAttribute('aria-label', 'Shopping cart, ' + cart.length + (cart.length === 1 ? ' item' : ' items'));
+    $('status').textContent = '✓ Added to cart: ' + d.name + ', ' + size(state.storage) + ' – ' + fmt(price);
   });
   $('search').addEventListener('input', function (e) { state.query = e.target.value; renderGrid(); });
   $('brand').addEventListener('change', function (e) { state.brand = e.target.value; renderGrid(); });
