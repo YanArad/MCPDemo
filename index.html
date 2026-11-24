@@ -1,225 +1,447 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Phone Picker – Mobile Device Catalog</title>
-<style>
-  :root { --bg:#f4f6fb; --card:#fff; --ink:#1b2033; --muted:#5d6580; --accent:#4f46e5; --accent-d:#3730a3; --ok:#0f8a4f; --line:#dde1ee; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
-  header { background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; padding:1.5rem 1rem; }
-  header h1 { margin:0 0 .25rem; font-size:1.6rem; }
-  header p { margin:0; opacity:.9; }
-  main { max-width:1200px; margin:0 auto; padding:1rem; display:grid; gap:1rem; grid-template-columns:1fr 300px; align-items:start; }
-  .filters { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:.75rem; background:var(--card); padding:1rem; border-radius:12px; border:1px solid var(--line); }
-  .filters label { display:flex; flex-direction:column; font-size:.8rem; color:var(--muted); gap:.25rem; flex:1 1 180px; }
-  input, select, button { font:inherit; }
-  input, select { padding:.55rem .7rem; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); }
-  :focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem; list-style:none; margin:0; padding:0; }
-  .card { background:var(--card); border:2px solid var(--line); border-radius:14px; padding:1rem; display:flex; flex-direction:column; gap:.5rem; }
-  .card.selected { border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,70,229,.2); }
-  .card img { width:100%; height:160px; object-fit:contain; border-radius:8px; background:#eef0f8; }
-  .card h3 { margin:0; font-size:1.05rem; }
-  .meta { color:var(--muted); font-size:.85rem; }
-  .price { font-weight:700; font-size:1.1rem; }
-  .btn { padding:.6rem .9rem; border:0; border-radius:8px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
-  .btn:hover:not(:disabled) { background:var(--accent-d); }
-  .btn:disabled { background:#aab; cursor:not-allowed; }
-  .btn.secondary { background:#fff; color:var(--accent); border:2px solid var(--accent); }
-  .card .btn { margin-top:auto; }
-  aside { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1rem; position:sticky; top:1rem; }
-  aside h2 { margin-top:0; font-size:1.15rem; }
-  aside img { width:100%; height:140px; object-fit:contain; background:#eef0f8; border-radius:8px; }
-  fieldset { border:0; padding:0; margin:.75rem 0; }
-  legend { font-size:.85rem; color:var(--muted); margin-bottom:.35rem; padding:0; }
-  .opts { display:flex; flex-wrap:wrap; gap:.4rem; }
-  .opts label { cursor:pointer; }
-  .opts input { position:absolute; opacity:0; }
-  .opts span { display:inline-block; padding:.4rem .7rem; border:2px solid var(--line); border-radius:8px; font-size:.9rem; }
-  .opts input:checked + span { border-color:var(--accent); background:#eef; font-weight:600; }
-  .opts input:focus-visible + span { outline:3px solid #f59e0b; outline-offset:2px; }
-  .status { min-height:1.4rem; color:var(--ok); font-weight:600; margin:.5rem 0 0; }
-  .empty { padding:2rem; text-align:center; color:var(--muted); }
-  .basket-count { display:inline-grid; place-items:center; min-width:1.5rem; height:1.5rem; margin-left:.25rem; border-radius:99px; background:#fff; color:var(--accent-d); }
-  @media (max-width:800px) { main { grid-template-columns:1fr; } aside { position:static; order:-1; } }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7fb">
+  <meta name="description" content="Browse and select phones and tablets from the Mobile Device Store.">
+  <title>Mobile Device Store</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18212f;
+      --muted: #687386;
+      --line: #e5e9f0;
+      --paper: #fff;
+      --canvas: #f6f7fb;
+      --accent: #5546e8;
+      --accent-dark: #4335c5;
+      --accent-soft: #f0efff;
+      --green: #157b55;
+      --shadow: 0 12px 34px rgba(30, 42, 68, .07);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); min-width: 320px; }
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(85, 70, 232, .35);
+      outline-offset: 3px;
+    }
+    .shell { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
+
+    .site-header { height: 76px; display: flex; align-items: center; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.92); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 750; letter-spacing: -.03em; }
+    .brand-mark { width: 35px; height: 35px; display: grid; place-items: center; color: white; border-radius: 11px; background: var(--accent); box-shadow: 0 5px 12px rgba(85,70,232,.23); }
+    .brand-mark svg { width: 19px; height: 19px; }
+    .header-note { color: var(--muted); font-size: 13px; }
+
+    main { padding: 48px 0 100px; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1fr) 240px; align-items: end; gap: 32px; margin-bottom: 36px; }
+    .eyebrow { margin: 0 0 12px; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { max-width: 680px; margin: 0; font-size: clamp(36px, 5vw, 56px); line-height: 1.04; letter-spacing: -.055em; }
+    .hero-copy { max-width: 570px; margin: 17px 0 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
+    .hero-aside { padding: 17px 18px; border: 1px solid #e5e2ff; border-radius: 15px; background: #f1f0ff; }
+    .hero-aside strong { display: block; margin-bottom: 5px; font-size: 14px; }
+    .hero-aside span { color: #64617f; font-size: 12px; line-height: 1.5; }
+
+    .toolbar { padding: 19px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: var(--shadow); }
+    .toolbar-top { display: flex; align-items: center; gap: 12px; }
+    .search-wrap { position: relative; flex: 1; min-width: 180px; }
+    .search-icon { position: absolute; top: 50%; left: 15px; width: 18px; height: 18px; color: #8892a2; transform: translateY(-50%); pointer-events: none; }
+    .search-input { width: 100%; height: 48px; padding: 0 14px 0 44px; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; background: #fbfcfe; }
+    .search-input::placeholder { color: #8c95a4; }
+    .filter-select { height: 48px; min-width: 150px; padding: 0 35px 0 13px; color: #394356; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .category-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .category-button { min-height: 36px; padding: 0 15px; color: #667084; border: 1px solid transparent; border-radius: 10px; background: transparent; font-size: 13px; font-weight: 650; }
+    .category-button:hover { color: var(--ink); background: #f6f7fa; }
+    .category-button[aria-pressed="true"] { color: var(--accent); border-color: #e4e1ff; background: var(--accent-soft); }
+
+    .results-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 26px 2px 15px; }
+    .results-bar h2 { margin: 0; font-size: 17px; letter-spacing: -.02em; }
+    .results-count { color: var(--muted); font-size: 13px; }
+    .product-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 17px; }
+    .product-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 17px; background: var(--paper); box-shadow: 0 5px 18px rgba(30,42,68,.035); transition: transform .18s ease, box-shadow .18s ease; }
+    .product-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .product-image { position: relative; display: grid; height: 190px; place-items: center; overflow: hidden; background: var(--product-bg, #f1f2f7); }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+    .product-card:hover .product-image img { transform: scale(1.035); }
+    .image-placeholder { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.9), var(--product-bg, #f1f2f7)); }
+    .image-placeholder[hidden] { display: none; }
+    .placeholder-device { position: relative; width: 74px; height: 130px; border: 5px solid #303747; border-radius: 16px; background: linear-gradient(145deg, var(--product-color, #9086ff), #d7d2ff); box-shadow: 0 14px 24px rgba(29,35,54,.2); }
+    .placeholder-device::before { position: absolute; top: 4px; left: 50%; width: 22px; height: 5px; border-radius: 0 0 7px 7px; background: #303747; content: ""; transform: translateX(-50%); }
+    .placeholder-device::after { position: absolute; right: 5px; bottom: 7px; left: 5px; height: 45px; border-radius: 8px; background: rgba(255,255,255,.35); content: ""; }
+    .placeholder-tablet { width: 115px; height: 130px; border-radius: 13px; }
+    .image-tag { position: absolute; top: 12px; left: 12px; padding: 6px 9px; color: #4a5363; border: 1px solid rgba(255,255,255,.8); border-radius: 8px; background: rgba(255,255,255,.88); font-size: 10px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+    .product-info { padding: 16px; }
+    .brand-name { margin: 0 0 5px; color: #778194; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .product-name { min-height: 42px; margin: 0; font-size: 16px; line-height: 1.35; letter-spacing: -.025em; }
+    .product-meta { display: flex; align-items: center; gap: 7px; margin-top: 7px; color: var(--muted); font-size: 11px; }
+    .rating { color: #b77911; font-weight: 750; }
+    .dot { width: 3px; height: 3px; border-radius: 50%; background: #a7afbc; }
+    .price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 16px 0 11px; }
+    .price { font-size: 20px; font-weight: 780; letter-spacing: -.04em; }
+    .stock { color: var(--green); font-size: 10px; font-weight: 700; }
+    .storage-label { display: block; margin-bottom: 6px; color: #677286; font-size: 11px; font-weight: 650; }
+    .storage-select { width: 100%; height: 39px; padding: 0 11px; color: #394356; border: 1px solid var(--line); border-radius: 9px; background: white; font-size: 12px; }
+    .select-button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 43px; margin-top: 12px; color: white; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); font-size: 12px; font-weight: 750; transition: background .15s ease, border-color .15s ease; }
+    .select-button:hover { border-color: var(--accent-dark); background: var(--accent-dark); }
+    .select-button[aria-pressed="true"] { color: var(--accent); border-color: #dfdcff; background: var(--accent-soft); }
+    .select-button[aria-pressed="true"]:hover { border-color: #cbc6ff; background: #e9e7ff; }
+    .check-icon { width: 15px; height: 15px; }
+    .empty-state { grid-column: 1 / -1; padding: 62px 20px; text-align: center; border: 1px dashed #d5dbe5; border-radius: 16px; background: rgba(255,255,255,.6); }
+    .empty-state h3 { margin: 0 0 8px; font-size: 17px; }
+    .empty-state p { margin: 0; color: var(--muted); font-size: 13px; }
+    .clear-filters { margin-top: 17px; padding: 8px 12px; color: var(--accent); border: 0; border-radius: 8px; background: var(--accent-soft); font-size: 12px; font-weight: 700; }
+
+    .selection-dock { position: fixed; z-index: 5; right: 24px; bottom: 20px; left: 24px; display: flex; align-items: center; justify-content: space-between; gap: 18px; width: min(1132px, calc(100% - 48px)); margin: 0 auto; padding: 14px 16px; border: 1px solid #e0ddff; border-radius: 16px; background: rgba(255,255,255,.97); box-shadow: 0 16px 48px rgba(27,31,59,.18); backdrop-filter: blur(12px); }
+    .selection-dock[hidden] { display: none; }
+    .selection-summary { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .selection-count { flex: 0 0 auto; font-size: 13px; font-weight: 750; }
+    .selection-items { display: flex; gap: 7px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+    .selection-chip { display: inline-flex; align-items: center; gap: 7px; max-width: 210px; padding: 7px 9px; color: #4b5364; border: 1px solid var(--line); border-radius: 9px; background: #fafbfe; font-size: 11px; white-space: nowrap; }
+    .selection-chip span { overflow: hidden; text-overflow: ellipsis; }
+    .remove-selection { display: grid; flex: 0 0 auto; width: 19px; height: 19px; place-items: center; color: #737d8c; border: 0; border-radius: 50%; background: #eceef3; font-size: 14px; line-height: 1; }
+    .dock-actions { display: flex; align-items: center; flex: 0 0 auto; gap: 8px; }
+    .clear-selection { padding: 10px 11px; color: #697386; border: 0; border-radius: 9px; background: transparent; font-size: 11px; font-weight: 700; }
+    .review-button { min-height: 42px; padding: 0 15px; color: white; border: 0; border-radius: 10px; background: var(--accent); font-size: 12px; font-weight: 750; white-space: nowrap; }
+    .review-button:hover { background: var(--accent-dark); }
+
+    dialog { width: min(520px, calc(100% - 32px)); max-height: min(80vh, 680px); padding: 0; overflow: auto; color: var(--ink); border: 1px solid var(--line); border-radius: 19px; background: white; box-shadow: 0 24px 80px rgba(24,33,47,.28); }
+    dialog::backdrop { background: rgba(21,27,42,.48); backdrop-filter: blur(3px); }
+    .dialog-content { padding: 24px; }
+    .dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .dialog-heading h2 { margin: 0; font-size: 22px; letter-spacing: -.04em; }
+    .dialog-heading p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .dialog-close { display: grid; flex: 0 0 auto; width: 34px; height: 34px; place-items: center; color: #626d7e; border: 1px solid var(--line); border-radius: 9px; background: #fff; font-size: 20px; }
+    .dialog-items { display: grid; gap: 10px; margin: 22px 0 16px; }
+    .dialog-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 11px; background: #fbfcfe; }
+    .dialog-item strong { display: block; font-size: 13px; }
+    .dialog-item span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .dialog-item .dialog-price { flex: 0 0 auto; color: var(--ink); font-size: 13px; font-weight: 750; }
+    .dialog-total { display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid var(--line); font-size: 13px; font-weight: 750; }
+    .dialog-footnote { margin: 13px 0 18px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .done-button { width: 100%; height: 44px; color: white; border: 0; border-radius: 10px; background: var(--accent); font-size: 13px; font-weight: 750; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    @media (max-width: 980px) {
+      .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .hero { grid-template-columns: minmax(0, 1fr) 210px; }
+      .product-image { height: 175px; }
+    }
+    @media (max-width: 720px) {
+      .shell { width: min(100% - 32px, 560px); }
+      .site-header { height: 65px; }
+      main { padding-top: 34px; }
+      .hero { display: block; margin-bottom: 26px; }
+      .hero-aside { display: none; }
+      .hero-copy { font-size: 14px; }
+      .toolbar { padding: 14px; }
+      .toolbar-top { display: grid; grid-template-columns: 1fr 1fr; }
+      .search-wrap { grid-column: 1 / -1; }
+      .filter-select { width: 100%; min-width: 0; }
+      .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .product-image { height: 155px; }
+      .product-info { padding: 12px; }
+      .product-name { min-height: 40px; font-size: 14px; }
+      .price { font-size: 18px; }
+      .selection-dock { right: 12px; bottom: 12px; left: 12px; width: calc(100% - 24px); align-items: stretch; flex-direction: column; gap: 10px; padding: 12px; }
+      .selection-summary { justify-content: space-between; }
+      .selection-items { max-width: 55%; }
+      .dock-actions { justify-content: flex-end; }
+      .clear-selection { margin-right: auto; }
+      main { padding-bottom: 150px; }
+    }
+    @media (max-width: 420px) {
+      .shell { width: calc(100% - 24px); }
+      .header-note { font-size: 11px; }
+      .product-grid { gap: 9px; }
+      .product-image { height: 132px; }
+      .product-meta { flex-wrap: wrap; }
+      .stock { font-size: 9px; }
+      .selection-count { font-size: 12px; }
+      .selection-items { max-width: 52%; }
+      .selection-chip { max-width: 170px; }
+      .review-button { padding: 0 11px; font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1>Phone Picker</h1>
-  <p>Browse the catalog, choose a storage size and continue with your device.</p>
-</header>
-<main>
-  <section class="filters" aria-label="Search and filters">
-    <label>Search<input id="search" type="search" placeholder="e.g. Pixel, iPhone" autocomplete="off"></label>
-    <label>Brand<select id="brand"><option value="">All brands</option></select></label>
-    <label>Category<select id="category"><option value="">All categories</option></select></label>
-    <label>Sort<select id="sort">
-      <option value="">Featured</option><option value="asc">Price: low to high</option><option value="desc">Price: high to low</option>
-    </select></label>
-  </section>
-
-  <section aria-labelledby="catalog-h">
-    <h2 id="catalog-h" style="margin-top:0">Catalog <span class="meta" id="count" aria-live="polite"></span></h2>
-    <ul class="grid" id="grid"></ul>
-    <p class="empty" id="empty" hidden>No devices match your search.</p>
-  </section>
-
-  <aside aria-labelledby="sel-h">
-    <h2 id="sel-h">Your selection</h2>
-    <div id="none" class="meta">No device selected yet. Choose “Select” on a phone.</div>
-    <div id="detail" hidden>
-      <img id="sel-img" alt="">
-      <h3 id="sel-name" style="margin:.5rem 0 0"></h3>
-      <div class="meta" id="sel-meta"></div>
-      <fieldset><legend>Storage</legend><div class="opts" id="storage"></div></fieldset>
-      <div class="price" id="sel-price"></div>
-      <p><button class="btn" id="add" type="button">Add to cart</button></p>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="#top" aria-label="Mobile Device Store home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="6.5" y="2.5" width="11" height="19" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="M10 5h4M10.8 18.5h2.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <span>mobile<span style="color:var(--accent)">.</span>store</span>
+      </a>
+      <span class="header-note">Find the right fit. No guesswork.</span>
     </div>
-    <p class="status" id="status" role="status" aria-live="polite"></p>
-  </aside>
-</main>
+  </header>
 
-<script>
-(function () {
-  'use strict';
-  var CATALOG = [
-    { id:'iphone15', brand:'Apple', name:'iPhone 15', category:'Flagship', base:799, opts:[[128,0],[256,100],[512,300]], color:'#4f46e5', img:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/IPhone_15_Pro_Max_Blue_Titanium.jpg/240px-IPhone_15_Pro_Max_Blue_Titanium.jpg' },
-    { id:'iphone15pro', brand:'Apple', name:'iPhone 15 Pro', category:'Flagship', base:999, opts:[[128,0],[256,100],[512,300],[1024,500]], color:'#334155' },
-    { id:'iphonese', brand:'Apple', name:'iPhone SE (3rd gen)', category:'Budget', base:429, opts:[[64,0],[128,50],[256,150]], color:'#dc2626' },
-    { id:'s24', brand:'Samsung', name:'Galaxy S24', category:'Flagship', base:799, opts:[[128,0],[256,60],[512,180]], color:'#7c3aed' },
-    { id:'s24u', brand:'Samsung', name:'Galaxy S24 Ultra', category:'Flagship', base:1299, opts:[[256,0],[512,120],[1024,360]], color:'#0f766e' },
-    { id:'a54', brand:'Samsung', name:'Galaxy A54 5G', category:'Mid-range', base:449, opts:[[128,0],[256,50]], color:'#2563eb' },
-    { id:'zflip5', brand:'Samsung', name:'Galaxy Z Flip5', category:'Foldable', base:999, opts:[[256,0],[512,120]], color:'#db2777' },
-    { id:'pixel8', brand:'Google', name:'Pixel 8', category:'Flagship', base:699, opts:[[128,0],[256,60]], color:'#16a34a' },
-    { id:'pixel8a', brand:'Google', name:'Pixel 8a', category:'Mid-range', base:499, opts:[[128,0],[256,60]], color:'#ea580c' },
-    { id:'fold', brand:'Google', name:'Pixel Fold', category:'Foldable', base:1799, opts:[[256,0],[512,100]], color:'#0891b2' },
-    { id:'nord3', brand:'OnePlus', name:'OnePlus Nord 3', category:'Mid-range', base:399, opts:[[128,0],[256,50]], color:'#be123c' },
-    { id:'op12', brand:'OnePlus', name:'OnePlus 12', category:'Flagship', base:799, opts:[[256,0],[512,100]], color:'#15803d' },
-    { id:'redmi', brand:'Xiaomi', name:'Redmi Note 13', category:'Budget', base:199, opts:[[128,0],[256,40]], color:'#d97706' },
-    { id:'x14', brand:'Xiaomi', name:'Xiaomi 14', category:'Flagship', base:899, opts:[[256,0],[512,100]], color:'#475569' }
-  ];
+  <main id="top" class="shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">The device edit</p>
+        <h1 id="page-title">Your next favorite<br>starts here.</h1>
+        <p class="hero-copy">Explore thoughtfully picked phones and tablets. Compare options, choose your storage, and build a shortlist that feels right.</p>
+      </div>
+      <aside class="hero-aside" aria-label="How selection works">
+        <strong>A shortlist, your way</strong>
+        <span>Select one or more devices, then review your picks together. You can change your mind at any time.</span>
+      </aside>
+    </section>
 
-  var $ = function (id) { return document.getElementById(id); };
-  var state = { query:'', brand:'', category:'', sort:'', selectedId:null, storage:null };
-  var cart = [];
+    <section class="toolbar" aria-label="Search and filter devices">
+      <div class="toolbar-top">
+        <label class="search-wrap">
+          <span class="sr-only">Search devices</span>
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <input id="searchInput" class="search-input" type="search" placeholder="Search by device or brand" autocomplete="off">
+        </label>
+        <label>
+          <span class="sr-only">Filter by brand</span>
+          <select id="brandFilter" class="filter-select">
+            <option value="all">All brands</option>
+            <option value="Apple">Apple</option>
+            <option value="Google">Google</option>
+            <option value="Samsung">Samsung</option>
+          </select>
+        </label>
+        <label>
+          <span class="sr-only">Sort devices</span>
+          <select id="sortSelect" class="filter-select">
+            <option value="featured">Featured</option>
+            <option value="price-low">Price: low to high</option>
+            <option value="price-high">Price: high to low</option>
+            <option value="rating">Top rated</option>
+          </select>
+        </label>
+      </div>
+      <div class="category-row" role="group" aria-label="Filter by device category">
+        <button class="category-button" type="button" data-category="all" aria-pressed="true">All devices</button>
+        <button class="category-button" type="button" data-category="phone" aria-pressed="false">Phones</button>
+        <button class="category-button" type="button" data-category="tablet" aria-pressed="false">Tablets</button>
+      </div>
+    </section>
 
-  function fmt(n) { return '$' + n.toLocaleString('en-US'); }
-  function size(gb) { return gb >= 1024 ? (gb / 1024) + ' TB' : gb + ' GB'; }
-  function find(id) { return CATALOG.filter(function (d) { return d.id === id; })[0]; }
-  function priceFor(d, gb) {
-    var o = d.opts.filter(function (x) { return x[0] === gb; })[0];
-    return d.base + (o ? o[1] : 0);
-  }
-  function placeholder(d) {
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="160" viewBox="0 0 240 160">' +
-      '<rect width="240" height="160" fill="#eef0f8"/><rect x="85" y="10" width="70" height="140" rx="14" fill="' + d.color + '"/>' +
-      '<rect x="91" y="20" width="58" height="120" rx="8" fill="#fff" opacity=".25"/><circle cx="120" cy="143" r="3" fill="#fff"/></svg>';
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  }
-  function imgSrc(d) { return d.img || placeholder(d); }
-  function attachFallback(img, d) {
-    img.onerror = function () { img.onerror = null; img.src = placeholder(d); };
-  }
-  function uniq(key) {
-    return CATALOG.map(function (d) { return d[key]; })
-      .filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
-  }
-  function fill(sel, values) {
-    values.forEach(function (v) {
-      var o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o);
-    });
-  }
+    <section aria-labelledby="results-title">
+      <div class="results-bar">
+        <h2 id="results-title">Explore the collection</h2>
+        <span id="resultsCount" class="results-count" aria-live="polite"></span>
+      </div>
+      <div id="productGrid" class="product-grid"></div>
+    </section>
+  </main>
 
-  function filtered() {
-    var q = state.query.trim().toLowerCase();
-    var list = CATALOG.filter(function (d) {
-      return (!state.brand || d.brand === state.brand) &&
-        (!state.category || d.category === state.category) &&
-        (!q || (d.brand + ' ' + d.name + ' ' + d.category).toLowerCase().indexOf(q) !== -1);
-    });
-    if (state.sort) {
-      list.sort(function (a, b) { return state.sort === 'asc' ? a.base - b.base : b.base - a.base; });
+  <section id="selectionDock" class="selection-dock" aria-label="Selected devices" hidden>
+    <div class="selection-summary">
+      <span id="selectionCount" class="selection-count"></span>
+      <div id="selectionItems" class="selection-items" aria-label="Your selected devices"></div>
+    </div>
+    <div class="dock-actions">
+      <button id="clearSelection" class="clear-selection" type="button">Clear all</button>
+      <button id="reviewSelection" class="review-button" type="button">Review selection</button>
+    </div>
+  </section>
+
+  <dialog id="selectionDialog" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
+    <div class="dialog-content">
+      <div class="dialog-heading">
+        <div>
+          <h2 id="dialogTitle">Your shortlist</h2>
+          <p id="dialogDescription">Here are the devices you picked.</p>
+        </div>
+        <button id="closeDialog" class="dialog-close" type="button" aria-label="Close selection review">&times;</button>
+      </div>
+      <div id="dialogItems" class="dialog-items"></div>
+      <div class="dialog-total"><span>Estimated total</span><span id="dialogTotal"></span></div>
+      <p class="dialog-footnote">This is a product selection demo. No order has been placed.</p>
+      <button id="doneButton" class="done-button" type="button">Done</button>
+    </div>
+  </dialog>
+
+  <p id="selectionAnnouncement" class="sr-only" role="status" aria-live="polite"></p>
+
+  <script>
+    const products = [
+      { id: "iphone-17-pro", brand: "Apple", name: "iPhone 17 Pro", category: "phone", price: 999, storage: ["256 GB", "512 GB", "1 TB"], rating: 4.9, reviews: 284, color: "#d8d0c4", image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=900&q=82", detail: "Pro camera · A19 Pro" },
+      { id: "galaxy-s25-ultra", brand: "Samsung", name: "Galaxy S25 Ultra", category: "phone", price: 1199, storage: ["256 GB", "512 GB", "1 TB"], rating: 4.8, reviews: 412, color: "#d9e3ed", image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=900&q=82", detail: "S Pen · 200 MP camera" },
+      { id: "pixel-10-pro", brand: "Google", name: "Pixel 10 Pro", category: "phone", price: 999, storage: ["128 GB", "256 GB", "512 GB"], rating: 4.8, reviews: 196, color: "#d9e5d7", image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=900&q=82", detail: "Pro camera · Gemini built in" },
+      { id: "iphone-16", brand: "Apple", name: "iPhone 16", category: "phone", price: 699, storage: ["128 GB", "256 GB", "512 GB"], rating: 4.7, reviews: 503, color: "#e8d8e1", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=900&q=82", detail: "A18 chip · All-day battery" },
+      { id: "galaxy-z-flip7", brand: "Samsung", name: "Galaxy Z Flip7", category: "phone", price: 1099, storage: ["256 GB", "512 GB"], rating: 4.7, reviews: 142, color: "#e3dcef", image: "https://images.unsplash.com/photo-1605236453806-6ff36851218e?auto=format&fit=crop&w=900&q=82", detail: "Foldable design · FlexWindow" },
+      { id: "pixel-10", brand: "Google", name: "Pixel 10", category: "phone", price: 799, storage: ["128 GB", "256 GB"], rating: 4.6, reviews: 118, color: "#e5e4d7", image: "https://images.unsplash.com/photo-1512499617640-c74ae3a79d37?auto=format&fit=crop&w=900&q=82", detail: "Great shots · Helpful AI" },
+      { id: "ipad-air-11", brand: "Apple", name: "iPad Air 11-inch", category: "tablet", price: 599, storage: ["128 GB", "256 GB", "512 GB", "1 TB"], rating: 4.9, reviews: 311, color: "#d9e5f1", image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=900&q=82", detail: "M3 chip · Apple Pencil ready" },
+      { id: "galaxy-tab-s10-fe", brand: "Samsung", name: "Galaxy Tab S10 FE", category: "tablet", price: 499, storage: ["128 GB", "256 GB"], rating: 4.6, reviews: 87, color: "#e7e1d8", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?auto=format&fit=crop&w=900&q=82", detail: "S Pen included · 10.9-inch" }
+    ];
+
+    const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+    const selected = new Set();
+    const selectedStorage = Object.fromEntries(products.map(product => [product.id, product.storage[0]]));
+    let activeCategory = "all";
+    const grid = document.getElementById("productGrid");
+    const searchInput = document.getElementById("searchInput");
+    const brandFilter = document.getElementById("brandFilter");
+    const sortSelect = document.getElementById("sortSelect");
+    const selectionDock = document.getElementById("selectionDock");
+    const selectionDialog = document.getElementById("selectionDialog");
+    const announcement = document.getElementById("selectionAnnouncement");
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
     }
-    return list;
-  }
 
-  function renderGrid() {
-    var list = filtered(), grid = $('grid');
-    grid.innerHTML = '';
-    list.forEach(function (d) {
-      var li = document.createElement('li');
-      li.className = 'card' + (d.id === state.selectedId ? ' selected' : '');
-      var img = document.createElement('img');
-      img.alt = d.brand + ' ' + d.name; img.loading = 'lazy'; img.src = imgSrc(d);
-      attachFallback(img, d);
-      var h = document.createElement('h3'); h.textContent = d.name;
-      var m = document.createElement('div'); m.className = 'meta';
-      m.textContent = d.brand + ' · ' + d.category + ' · ' + d.opts.map(function (o) { return size(o[0]); }).join(' / ');
-      var p = document.createElement('div'); p.className = 'price'; p.textContent = 'From ' + fmt(d.base);
-      var b = document.createElement('button');
-      var isSel = d.id === state.selectedId;
-      b.type = 'button'; b.className = 'btn' + (isSel ? '' : ' secondary');
-      b.textContent = isSel ? '✓ Selected' : 'Select';
-      b.setAttribute('aria-pressed', String(isSel));
-      b.setAttribute('aria-label', (isSel ? 'Selected: ' : 'Select ') + d.name);
-      b.addEventListener('click', function () { selectDevice(d.id); });
-      [img, h, m, p, b].forEach(function (n) { li.appendChild(n); });
-      grid.appendChild(li);
-    });
-    $('empty').hidden = list.length > 0;
-    $('count').textContent = '(' + list.length + ' of ' + CATALOG.length + ')';
-  }
-
-  function renderSelection() {
-    var d = state.selectedId && find(state.selectedId);
-    $('none').hidden = !!d; $('detail').hidden = !d;
-    if (!d) { return; }
-    var img = $('sel-img'); img.alt = d.brand + ' ' + d.name; attachFallback(img, d); img.src = imgSrc(d);
-    $('sel-name').textContent = d.name;
-    $('sel-meta').textContent = d.brand + ' · ' + d.category;
-    var box = $('storage'); box.innerHTML = '';
-    d.opts.forEach(function (o) {
-      var l = document.createElement('label'), r = document.createElement('input'), s = document.createElement('span');
-      r.type = 'radio'; r.name = 'storage'; r.value = o[0]; r.checked = o[0] === state.storage;
-      r.addEventListener('change', function () {
-        state.storage = o[0]; $('status').textContent = ''; renderSelection();
+    function visibleProducts() {
+      const query = searchInput.value.trim().toLowerCase();
+      const brand = brandFilter.value;
+      const filtered = products.filter(product => {
+        const matchesQuery = !query || `${product.name} ${product.brand} ${product.detail}`.toLowerCase().includes(query);
+        return matchesQuery && (brand === "all" || product.brand === brand) && (activeCategory === "all" || product.category === activeCategory);
       });
-      s.textContent = size(o[0]) + ' – ' + fmt(d.base + o[1]);
-      l.appendChild(r); l.appendChild(s); box.appendChild(l);
+      const sort = sortSelect.value;
+      if (sort === "price-low") filtered.sort((a, b) => a.price - b.price);
+      if (sort === "price-high") filtered.sort((a, b) => b.price - a.price);
+      if (sort === "rating") filtered.sort((a, b) => b.rating - a.rating);
+      return filtered;
+    }
+
+    function renderProducts() {
+      const items = visibleProducts();
+      document.getElementById("resultsCount").textContent = `${items.length} ${items.length === 1 ? "device" : "devices"}`;
+      if (!items.length) {
+        grid.innerHTML = `<div class="empty-state"><h3>No devices found</h3><p>Try a different search or clear your filters.</p><button class="clear-filters" type="button" data-clear-filters>Clear filters</button></div>`;
+        return;
+      }
+      grid.innerHTML = items.map(product => {
+        const isSelected = selected.has(product.id);
+        const imageAlt = `${product.brand} ${product.name}`;
+        const placeholderType = product.category === "tablet" ? "placeholder-device placeholder-tablet" : "placeholder-device";
+        const options = product.storage.map(option => `<option value="${escapeHtml(option)}" ${selectedStorage[product.id] === option ? "selected" : ""}>${escapeHtml(option)}</option>`).join("");
+        return `<article class="product-card" style="--product-bg:${product.color};--product-color:${product.color}" aria-labelledby="name-${product.id}">
+          <div class="product-image">
+            <img src="${escapeHtml(product.image)}" alt="${escapeHtml(imageAlt)}" loading="lazy">
+            <div class="image-placeholder" hidden aria-hidden="true"><div class="${placeholderType}"></div></div>
+            <span class="image-tag">${product.category === "tablet" ? "Tablet" : "Smartphone"}</span>
+          </div>
+          <div class="product-info">
+            <p class="brand-name">${escapeHtml(product.brand)}</p>
+            <h3 id="name-${product.id}" class="product-name">${escapeHtml(product.name)}</h3>
+            <div class="product-meta"><span class="rating" aria-label="Rated ${product.rating} out of 5">★ ${product.rating.toFixed(1)}</span><span class="dot" aria-hidden="true"></span><span>${product.reviews} reviews</span></div>
+            <div class="price-row"><span class="price">${currency.format(product.price)}</span><span class="stock">In stock</span></div>
+            <label class="storage-label" for="storage-${product.id}">Storage</label>
+            <select id="storage-${product.id}" class="storage-select" data-storage="${product.id}">${options}</select>
+            <button class="select-button" type="button" data-select="${product.id}" aria-pressed="${isSelected}">${isSelected ? `<svg class="check-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Selected` : "Add to selection"}</button>
+          </div>
+        </article>`;
+      }).join("");
+      grid.querySelectorAll(".product-image img").forEach(image => {
+        image.addEventListener("error", () => {
+          image.hidden = true;
+          image.nextElementSibling.hidden = false;
+        }, { once: true });
+      });
+    }
+
+    function renderSelection() {
+      const productsSelected = products.filter(product => selected.has(product.id));
+      selectionDock.hidden = productsSelected.length === 0;
+      const count = productsSelected.length;
+      document.getElementById("selectionCount").textContent = `${count} ${count === 1 ? "device" : "devices"} selected`;
+      document.getElementById("selectionItems").innerHTML = productsSelected.map(product => `<span class="selection-chip"><span>${escapeHtml(product.name)} · ${escapeHtml(selectedStorage[product.id])}</span><button class="remove-selection" type="button" data-remove="${product.id}" aria-label="Remove ${escapeHtml(product.name)} from selection">&times;</button></span>`).join("");
+    }
+
+    function updateSelectedButton(id) {
+      const button = grid.querySelector(`[data-select="${id}"]`);
+      if (!button) return;
+      const isSelected = selected.has(id);
+      button.setAttribute("aria-pressed", String(isSelected));
+      button.innerHTML = isSelected ? `<svg class="check-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Selected` : "Add to selection";
+    }
+
+    function renderDialog() {
+      const items = products.filter(product => selected.has(product.id));
+      const total = items.reduce((sum, product) => sum + product.price, 0);
+      document.getElementById("dialogItems").innerHTML = items.map(product => `<div class="dialog-item"><div><strong>${escapeHtml(product.name)}</strong><span>${escapeHtml(product.brand)} · ${escapeHtml(selectedStorage[product.id])}</span></div><span class="dialog-price">${currency.format(product.price)}</span></div>`).join("");
+      document.getElementById("dialogTotal").textContent = currency.format(total);
+    }
+
+    grid.addEventListener("click", event => {
+      const button = event.target.closest("[data-select]");
+      if (button) {
+        const id = button.dataset.select;
+        if (selected.has(id)) selected.delete(id);
+        else selected.add(id);
+        updateSelectedButton(id);
+        renderSelection();
+        announcement.textContent = `${products.find(product => product.id === id).name} ${selected.has(id) ? "added to" : "removed from"} your selection. ${selected.size} ${selected.size === 1 ? "device" : "devices"} selected.`;
+        return;
+      }
+      if (event.target.closest("[data-clear-filters]")) {
+        searchInput.value = "";
+        brandFilter.value = "all";
+        activeCategory = "all";
+        document.querySelectorAll("[data-category]").forEach(categoryButton => categoryButton.setAttribute("aria-pressed", String(categoryButton.dataset.category === "all")));
+        renderProducts();
+      }
     });
-    $('sel-price').textContent = fmt(priceFor(d, state.storage));
-  }
 
-  function selectDevice(id) {
-    state.selectedId = state.selectedId === id ? null : id;
-    var device = state.selectedId && find(state.selectedId);
-    state.storage = device ? device.opts[0][0] : null;
-    $('status').textContent = '';
-    renderGrid();
-    renderSelection();
-  }
+    grid.addEventListener("change", event => {
+      const select = event.target.closest("[data-storage]");
+      if (!select) return;
+      selectedStorage[select.dataset.storage] = select.value;
+      renderSelection();
+    });
 
-  $('add').addEventListener('click', function () {
-    var d = find(state.selectedId);
-    if (!d) { return; }
-    var price = priceFor(d, state.storage);
-    cart.push({ deviceId:d.id, storage:state.storage, price:price });
-    $('cartCount').textContent = String(cart.length);
-    $('cartButton').setAttribute('aria-label', 'Shopping cart, ' + cart.length + (cart.length === 1 ? ' item' : ' items'));
-    $('status').textContent = '✓ Added to cart: ' + d.name + ', ' + size(state.storage) + ' – ' + fmt(price);
-  });
-  $('search').addEventListener('input', function (e) { state.query = e.target.value; renderGrid(); });
-  $('brand').addEventListener('change', function (e) { state.brand = e.target.value; renderGrid(); });
-  $('category').addEventListener('change', function (e) { state.category = e.target.value; renderGrid(); });
-  $('sort').addEventListener('change', function (e) { state.sort = e.target.value; renderGrid(); });
+    grid.addEventListener("error", event => {
+      if (event.target instanceof HTMLImageElement && event.target.parentElement.classList.contains("product-image")) {
+        event.target.hidden = true;
+        event.target.nextElementSibling.hidden = false;
+      }
+    }, true);
 
-  fill($('brand'), uniq('brand'));
-  fill($('category'), uniq('category'));
-  renderGrid(); renderSelection();
-})();
-</script>
+    document.querySelectorAll("[data-category]").forEach(button => button.addEventListener("click", () => {
+      activeCategory = button.dataset.category;
+      document.querySelectorAll("[data-category]").forEach(categoryButton => categoryButton.setAttribute("aria-pressed", String(categoryButton === button)));
+      renderProducts();
+    }));
+    searchInput.addEventListener("input", renderProducts);
+    brandFilter.addEventListener("change", renderProducts);
+    sortSelect.addEventListener("change", renderProducts);
+
+    document.getElementById("selectionItems").addEventListener("click", event => {
+      const button = event.target.closest("[data-remove]");
+      if (!button) return;
+      const id = button.dataset.remove;
+      selected.delete(id);
+      updateSelectedButton(id);
+      renderSelection();
+      announcement.textContent = `${products.find(product => product.id === id).name} removed from your selection. ${selected.size} ${selected.size === 1 ? "device" : "devices"} selected.`;
+    });
+    document.getElementById("clearSelection").addEventListener("click", () => {
+      selected.forEach(updateSelectedButton);
+      selected.clear();
+      renderSelection();
+      announcement.textContent = "Selection cleared.";
+    });
+    document.getElementById("reviewSelection").addEventListener("click", () => {
+      renderDialog();
+      selectionDialog.showModal();
+    });
+    document.getElementById("closeDialog").addEventListener("click", () => selectionDialog.close());
+    document.getElementById("doneButton").addEventListener("click", () => selectionDialog.close());
+    selectionDialog.addEventListener("click", event => {
+      if (event.target === selectionDialog) selectionDialog.close();
+    });
+
+    renderProducts();
+  </script>
 </body>
 </html>
