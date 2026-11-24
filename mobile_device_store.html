@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f5">
+  <title>Mobile Device Store</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #17211d;
+      background: #f6f7f5;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --muted: #68746e;
+      --line: #e4e9e5;
+      --green: #176b4a;
+      --green-dark: #10543a;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+
+    .site-header {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 6vw, 88px);
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand-mark { display: flex; align-items: center; gap: 11px; font-size: 19px; font-weight: 750; letter-spacing: -.04em; }
+    .brand-icon { display: grid; width: 34px; height: 34px; place-items: center; color: #fff; background: var(--green); border-radius: 11px; }
+    .header-note { color: var(--muted); font-size: 13px; }
+    main { width: min(1240px, calc(100% - 40px)); margin: 0 auto; padding: 54px 0 76px; }
+    .intro { max-width: 690px; margin-bottom: 34px; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: 12px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(36px, 5vw, 58px); line-height: 1.04; letter-spacing: -.055em; }
+    .intro-copy { max-width: 540px; margin: 16px 0 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
+
+    .store-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 38px; align-items: start; }
+    .filters { padding: 22px 18px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
+    .filter-heading { margin: 0 0 18px; font-size: 14px; }
+    .category-list { display: grid; gap: 5px; }
+    .category-button { width: 100%; padding: 10px 11px; border: 0; border-radius: 9px; color: #53615a; background: transparent; text-align: left; font-size: 14px; }
+    .category-button:hover { background: #f3f6f3; }
+    .category-button[aria-pressed="true"] { color: var(--green-dark); background: #eaf4ee; font-weight: 700; }
+    .filter-divider { height: 1px; margin: 22px 0; background: var(--line); }
+    .field-label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; }
+    .select-control, .search-input { width: 100%; min-height: 44px; padding: 0 12px; color: #25322b; background: #fff; border: 1px solid #dce3dd; border-radius: 9px; outline: none; }
+    .select-control:focus, .search-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px #176b4a22; }
+    .selection-box { margin-top: 24px; padding: 16px; border-radius: 12px; background: #f4f7f4; }
+    .selection-box h3 { margin: 0; font-size: 14px; }
+    .selection-count { display: block; margin-top: 7px; color: var(--muted); font-size: 13px; }
+    .selection-total { margin: 14px 0 0; font-size: 13px; font-weight: 700; }
+    .confirm-button { width: 100%; min-height: 44px; margin-top: 15px; color: #fff; background: var(--green); border: 0; border-radius: 9px; font-weight: 700; }
+    .confirm-button:hover:not(:disabled) { background: var(--green-dark); }
+    .confirm-button:disabled { cursor: not-allowed; opacity: .46; }
+    .clear-button { width: 100%; margin-top: 10px; padding: 6px; color: var(--muted); background: transparent; border: 0; font-size: 12px; text-decoration: underline; }
+    .clear-button:disabled { cursor: default; opacity: .45; }
+
+    .catalog-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .search-wrap { position: relative; flex: 1; max-width: 470px; }
+    .search-input { padding-left: 39px; }
+    .search-icon { position: absolute; top: 13px; left: 13px; color: #7a867f; pointer-events: none; }
+    .sort-wrap { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .sort-wrap .select-control { width: auto; min-width: 160px; }
+    .results-line { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+    .product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .product-card { min-width: 0; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 15px; transition: border-color .15s, box-shadow .15s, transform .15s; }
+    .product-card:hover { transform: translateY(-2px); box-shadow: 0 9px 24px #1e35240c; }
+    .product-card.is-selected { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+    .product-art { position: relative; display: grid; height: 176px; place-items: center; overflow: hidden; background: var(--art-bg, #edf2ef); }
+    .product-art::before, .product-art::after { position: absolute; width: 190px; height: 190px; border: 1px solid #ffffff73; border-radius: 50%; content: ""; }
+    .product-art::after { width: 145px; height: 145px; }
+    .device-frame { position: relative; z-index: 1; width: 76px; height: 139px; padding: 5px; border: 2px solid #24322c; border-radius: 17px; background: #25322c; box-shadow: 0 13px 20px #1c2b2550; transform: rotate(-7deg); }
+    .device-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 11px; background: linear-gradient(145deg, var(--screen-a, #a5c5b3), var(--screen-b, #477b62)); }
+    .device-screen::before { position: absolute; right: -15px; bottom: 13px; width: 74px; height: 74px; border: 1px solid #ffffff6b; border-radius: 50%; content: ""; }
+    .device-screen::after { position: absolute; top: 6px; left: 50%; width: 20px; height: 5px; border-radius: 5px; background: #24322c; content: ""; transform: translateX(-50%); }
+    .product-art.tablet .device-frame { width: 122px; height: 145px; border-radius: 14px; transform: rotate(-5deg); }
+    .product-art.tablet .device-screen { border-radius: 9px; }
+    .product-art.tablet .device-screen::after { top: 50%; left: auto; right: 4px; width: 5px; height: 5px; transform: translateY(-50%); }
+    .product-info { padding: 16px; }
+    .product-meta { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11px; }
+    .product-brand { font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+    .availability { color: var(--green); font-weight: 650; }
+    .product-name { margin: 11px 0 5px; font-size: 16px; letter-spacing: -.025em; }
+    .product-spec { margin: 0; color: var(--muted); font-size: 12px; }
+    .product-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #edf0ed; }
+    .product-price { font-size: 17px; font-weight: 750; letter-spacing: -.03em; }
+    .select-control-label { display: inline-flex; align-items: center; gap: 7px; color: #405047; font-size: 12px; font-weight: 650; cursor: pointer; }
+    .product-checkbox { width: 17px; height: 17px; accent-color: var(--green); }
+    .empty-state { grid-column: 1 / -1; padding: 48px 20px; color: var(--muted); background: #fff; border: 1px dashed #cfd9d1; border-radius: 14px; text-align: center; }
+    .empty-state strong { display: block; margin-bottom: 7px; color: #25322b; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 2; max-width: min(420px, calc(100vw - 44px)); padding: 14px 18px; color: #fff; background: #1d3127; border-radius: 11px; box-shadow: 0 12px 30px #18271e36; font-size: 14px; line-height: 1.5; }
+    .toast[hidden] { display: none; }
+
+    @media (max-width: 960px) {
+      .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      .site-header { height: 64px; padding: 0 20px; }
+      .header-note { display: none; }
+      main { width: min(100% - 32px, 560px); padding-top: 38px; }
+      .store-layout { grid-template-columns: 1fr; gap: 20px; }
+      .filters { padding: 17px; }
+      .filter-heading { margin-bottom: 12px; }
+      .category-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .category-button { padding: 9px 7px; text-align: center; font-size: 12px; }
+      .filter-divider { margin: 16px 0; }
+      .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .selection-box { margin-top: 16px; }
+      .catalog-toolbar { align-items: stretch; flex-direction: column; }
+      .search-wrap { max-width: none; }
+      .sort-wrap { justify-content: space-between; }
+      .sort-wrap .select-control { flex: 1; }
+      .product-art { height: 155px; }
+    }
+    @media (max-width: 420px) {
+      .product-grid { gap: 10px; }
+      .product-info { padding: 12px; }
+      .product-meta { font-size: 10px; }
+      .product-name { font-size: 14px; }
+      .product-price { font-size: 15px; }
+      .product-bottom { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand-mark"><span class="brand-icon" aria-hidden="true">M</span><span>mobile<span style="color: var(--green)">store</span></span></div>
+    <p class="header-note">Thoughtful tech, chosen by you.</p>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">The device catalog</p>
+      <h1 id="page-title">Find your next<br>everyday essential.</h1>
+      <p class="intro-copy">Explore our collection of phones and tablets. Compare the details, select the devices you like, and review your choices before you decide.</p>
+    </section>
+
+    <div class="store-layout">
+      <aside class="filters" aria-label="Catalog filters">
+        <h2 class="filter-heading">Browse devices</h2>
+        <div class="category-list" role="group" aria-label="Device type">
+          <button class="category-button" type="button" data-category="all" aria-pressed="true">All devices</button>
+          <button class="category-button" type="button" data-category="phone" aria-pressed="false">Phones</button>
+          <button class="category-button" type="button" data-category="tablet" aria-pressed="false">Tablets</button>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-row">
+          <div>
+            <label class="field-label" for="brand-filter">Brand</label>
+            <select class="select-control" id="brand-filter">
+              <option value="all">All brands</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="sort-select">Sort by</label>
+            <select class="select-control" id="sort-select">
+              <option value="featured">Featured</option>
+              <option value="price-low">Price: low to high</option>
+              <option value="price-high">Price: high to low</option>
+              <option value="name">Name: A to Z</option>
+            </select>
+          </div>
+        </div>
+        <section class="selection-box" aria-labelledby="selection-title">
+          <h3 id="selection-title">Your selection</h3>
+          <span class="selection-count" id="selection-count">No devices selected</span>
+          <p class="selection-total" id="selection-total">Total: $0</p>
+          <button class="confirm-button" id="confirm-selection" type="button" disabled>Review selection</button>
+          <button class="clear-button" id="clear-selection" type="button" disabled>Clear selection</button>
+        </section>
+      </aside>
+
+      <section aria-label="Mobile device catalog">
+        <div class="catalog-toolbar">
+          <label class="search-wrap">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <span class="visually-hidden" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Search devices</span>
+            <input class="search-input" id="search-input" type="search" placeholder="Search by device or brand" autocomplete="off">
+          </label>
+        </div>
+        <p class="results-line" id="results-line" aria-live="polite"></p>
+        <div class="product-grid" id="product-grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="selection-toast" role="status" aria-live="polite" hidden></div>
+
+  <script>
+    const devices = [
+      { id: "iphone-16", name: "iPhone 16", brand: "Apple", category: "phone", detail: "128 GB · 6.1-inch display", price: 799, colors: ["#d9eee3", "#77a98a"], art: "#edf5ef" },
+      { id: "galaxy-s25", name: "Galaxy S25", brand: "Samsung", category: "phone", detail: "256 GB · 6.2-inch display", price: 859, colors: ["#e5e6f4", "#8588be"], art: "#f0f0f8" },
+      { id: "pixel-9", name: "Pixel 9", brand: "Google", category: "phone", detail: "128 GB · 6.3-inch display", price: 699, colors: ["#f1e4d7", "#bd8c68"], art: "#f8f1eb" },
+      { id: "iphone-16-pro", name: "iPhone 16 Pro", brand: "Apple", category: "phone", detail: "256 GB · 6.3-inch display", price: 999, colors: ["#e7e5df", "#9b978b"], art: "#f2f1ed" },
+      { id: "galaxy-tab-s10", name: "Galaxy Tab S10", brand: "Samsung", category: "tablet", detail: "256 GB · 12.4-inch display", price: 999, colors: ["#dce8f1", "#7994ad"], art: "#edf3f7" },
+      { id: "ipad-air", name: "iPad Air", brand: "Apple", category: "tablet", detail: "128 GB · 11-inch display", price: 599, colors: ["#f1dfd9", "#bd8878"], art: "#f7efec" },
+      { id: "pixel-tablet", name: "Pixel Tablet", brand: "Google", category: "tablet", detail: "128 GB · 11-inch display", price: 399, colors: ["#e4e8d8", "#8b9b70"], art: "#f0f3eb" },
+      { id: "oneplus-13", name: "OnePlus 13", brand: "OnePlus", category: "phone", detail: "256 GB · 6.8-inch display", price: 899, colors: ["#e8ddd7", "#ad8171"], art: "#f3ece8" },
+      { id: "ipad-mini", name: "iPad mini", brand: "Apple", category: "tablet", detail: "128 GB · 8.3-inch display", price: 499, colors: ["#e3e1ef", "#9088b3"], art: "#f1f0f7" }
+    ];
+
+    const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+    const grid = document.querySelector("#product-grid");
+    const resultsLine = document.querySelector("#results-line");
+    const searchInput = document.querySelector("#search-input");
+    const brandFilter = document.querySelector("#brand-filter");
+    const sortSelect = document.querySelector("#sort-select");
+    const selectionCount = document.querySelector("#selection-count");
+    const selectionTotal = document.querySelector("#selection-total");
+    const confirmButton = document.querySelector("#confirm-selection");
+    const clearButton = document.querySelector("#clear-selection");
+    const toast = document.querySelector("#selection-toast");
+    const selectedIds = new Set();
+    let category = "all";
+    let toastTimer;
+
+    [...new Set(devices.map((device) => device.brand))].sort().forEach((brand) => {
+      const option = document.createElement("option");
+      option.value = brand;
+      option.textContent = brand;
+      brandFilter.append(option);
+    });
+
+    function visibleDevices() {
+      const query = searchInput.value.trim().toLowerCase();
+      let matches = devices.filter((device) => {
+        const matchesCategory = category === "all" || device.category === category;
+        const matchesBrand = brandFilter.value === "all" || device.brand === brandFilter.value;
+        const matchesQuery = `${device.name} ${device.brand} ${device.detail}`.toLowerCase().includes(query);
+        return matchesCategory && matchesBrand && matchesQuery;
+      });
+
+      if (sortSelect.value === "price-low") matches.sort((a, b) => a.price - b.price);
+      if (sortSelect.value === "price-high") matches.sort((a, b) => b.price - a.price);
+      if (sortSelect.value === "name") matches.sort((a, b) => a.name.localeCompare(b.name));
+      return matches;
+    }
+
+    function renderProducts() {
+      const matches = visibleDevices();
+      resultsLine.textContent = `${matches.length} ${matches.length === 1 ? "device" : "devices"} found`;
+
+      if (matches.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><strong>No devices found</strong>Try another search or adjust your filters.</div>';
+        return;
+      }
+
+      grid.innerHTML = matches.map((device) => `
+        <article class="product-card${selectedIds.has(device.id) ? " is-selected" : ""}">
+          <div class="product-art${device.category === "tablet" ? " tablet" : ""}" style="--art-bg:${device.art};--screen-a:${device.colors[0]};--screen-b:${device.colors[1]}" aria-hidden="true">
+            <div class="device-frame"><div class="device-screen"></div></div>
+          </div>
+          <div class="product-info">
+            <div class="product-meta"><span class="product-brand">${device.brand}</span><span class="availability">In stock</span></div>
+            <h2 class="product-name">${device.name}</h2>
+            <p class="product-spec">${device.detail}</p>
+            <div class="product-bottom">
+              <span class="product-price">${currency.format(device.price)}</span>
+              <label class="select-control-label"><input class="product-checkbox" type="checkbox" value="${device.id}"${selectedIds.has(device.id) ? " checked" : ""}>Select</label>
+            </div>
+          </div>
+        </article>`).join("");
+    }
+
+    function updateSelection() {
+      const selectedDevices = devices.filter((device) => selectedIds.has(device.id));
+      const count = selectedDevices.length;
+      selectionCount.textContent = count === 0 ? "No devices selected" : `${count} ${count === 1 ? "device" : "devices"} selected`;
+      selectionTotal.textContent = `Total: ${currency.format(selectedDevices.reduce((sum, device) => sum + device.price, 0))}`;
+      confirmButton.disabled = count === 0;
+      clearButton.disabled = count === 0;
+      renderProducts();
+    }
+
+    document.querySelectorAll(".category-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        category = button.dataset.category;
+        document.querySelectorAll(".category-button").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+        renderProducts();
+      });
+    });
+
+    searchInput.addEventListener("input", renderProducts);
+    brandFilter.addEventListener("change", renderProducts);
+    sortSelect.addEventListener("change", renderProducts);
+
+    grid.addEventListener("change", (event) => {
+      if (!event.target.matches(".product-checkbox")) return;
+      if (event.target.checked) selectedIds.add(event.target.value);
+      else selectedIds.delete(event.target.value);
+      updateSelection();
+    });
+
+    clearButton.addEventListener("click", () => {
+      selectedIds.clear();
+      updateSelection();
+    });
+
+    confirmButton.addEventListener("click", () => {
+      const names = devices.filter((device) => selectedIds.has(device.id)).map((device) => device.name);
+      toast.textContent = `Selection ready: ${names.join(", ")}.`;
+      toast.hidden = false;
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => { toast.hidden = true; }, 4500);
+    });
+
+    renderProducts();
+    updateSelection();
+  </script>
+</body>
+</html>
